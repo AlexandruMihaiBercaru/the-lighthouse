@@ -5,9 +5,10 @@
 
 
 
-Cilindru::Cilindru(int nrParr, int nrMerid, float radius,float height):
+Cilindru::Cilindru(int nrParr, int nrMerid, float radius,float height, glm::vec3 color):
 	nrParr(nrParr), nrMerid(nrMerid), radius(radius), height(height),PI(3.141592f){
 	nrVf = (nrParr + 1) * (nrMerid + 1);
+	Color = color;
 }
 
 
@@ -39,7 +40,7 @@ void Cilindru::Create()
 			// identificator ptr varf; coordonate + culoare + indice la parcurgerea meridianelor
 			index = merid * (nrParr + 1) + parr;
 			Vertices[index] = glm::vec4(x_vf, y_vf, z_vf, 1.0);
-			Colors[index] = glm::vec3(0.92f, 0.0f, 0.0f);
+			Colors[index] = Color;
 			Normals[index] = glm::vec3(sinf(v), cosf(v), 1.0f);
 
 			// indicii pentru desenarea fetelor, pentru varful curent sunt definite 4 varfuri
