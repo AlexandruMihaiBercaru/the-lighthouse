@@ -1,0 +1,76 @@
+//
+// ================================================
+// | Grafica pe calculator                        |
+// ================================================
+// | Laboratorul X - Shader-ul pentru solutie
+// =====================================
+// 
+//  Shaderul de varfuri / Vertex shader - afecteaza geometria scenei; 
+ 
+ #version 330 core
+
+
+layout(location=0) in vec3 in_Position;
+layout(location=1) in vec3 in_Normal;
+layout(location=2) in vec3 in_Color;
+
+//  Variabile de iesire;
+out vec3 FragPos;
+out vec3 Normal;
+out vec3 inViewPos;
+out vec3 inLightPos;
+out vec4 ex_Color;
+
+//  Variabile uniforme;
+uniform int nrVertices;
+uniform int objectId;
+uniform int codCol;
+uniform mat4 myMatrix;
+uniform vec3 viewPos;
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat4 matrUmbra;
+uniform vec3 lightPos;
+
+
+void main(void)
+  {
+    // Transformari in spatiul de modelare
+    if (codCol == 0)
+        gl_Position = projection * view * myMatrix * vec4(in_Position, 1.0);
+    else if (codCol == 1)
+        gl_Position = projection * view * matrUmbra * myMatrix *  vec4(in_Position, 1.0);
+        
+
+    // Pentru modelul de iluminare 
+    // Atribute ale varfurilor
+    FragPos = mat3(myMatrix) * in_Position;
+    Normal = mat3(myMatrix) * in_Normal;
+    // Pozitia observatorului
+    inViewPos = vec3(myMatrix * vec4(viewPos, 1.0f));;
+
+    // Pozitia sursei de lumina (coincide cu a observatorului)
+    // Sursa de lumina
+    //inLightPos = vec3(myMatrix * vec4(lightPos, 1.0f));
+    inLightPos = vec3(myMatrix * vec4(lightPos, 1.0f));;
+    
+    // Pozitia sursei de lumina (diferita de a observatorului)
+    // inLightPos = vec3(5.0, 5.0, 7.0);
+
+    // Culoarea varfurilor
+ 	// ex_Color=vec4(1.2 * gl_VertexID/nrVertices, 0.95 * gl_VertexID/nrVertices, 1.5 * gl_VertexID/nrVertices, 1.0);
+    if (codCol == 0){
+        switch(objectId){
+            case 0:
+                 ex_Color = vec4(in_Color, 1.0);
+                 break;
+            case 1:
+                 ex_Color=vec4(0.2, 0.7, 0.3, 1.0);
+                 break;
+            case 2:
+                ex_Color = vec4(0.05, 0.05, 0.05, 1.0);
+                break;
+        }
+    }
+   } 
+ 
