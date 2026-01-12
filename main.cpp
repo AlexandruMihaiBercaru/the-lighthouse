@@ -71,8 +71,19 @@ float radius = 20;
 Sfera sfera(NR_PARR_SFERA, NR_MERID_SFERA, radius);
 int NR_PARR_CON = 18, NR_MERID_CON = 12;
 Cone con(NR_PARR_CON, NR_MERID_CON);
-int NR_VF_CON = (NR_PARR_CON + 1) * (NR_MERID_CON + 1);
 
+//	Identificatori optiuni meniu;
+enum {
+	FOG, NO_FOG
+};
+int renderMode;
+
+//	Meniu pentru selectia optiunilor;
+void Menu(int selection)
+{
+	renderMode = selection;
+	glutPostRedisplay();
+}
 
 void processNormalKeys(unsigned char key, int x, int y){
 	KeyboardFunctions::ProcessNormalKeys(key, x, y, cameraParams);
@@ -193,17 +204,6 @@ void SetMVP(void)
 	glUniformMatrix4fv(projLocation, 1, GL_FALSE, &projection[0][0]);
 }
 
-
-void RenderSphere(glm::mat4 modelMatrix) {
-	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-	int NR_VF = (NR_PARR_SFERA + 1)* (NR_MERID_SFERA + 1);
-	for (int patr = 0; patr < NR_VF; patr++)
-	{
-		if ((patr + 1) % (NR_PARR_SFERA + 1) != 0) // nu sunt considerate fetele in care in stanga jos este Polul Nord
-			glDrawElements(GL_QUADS, 4, GL_UNSIGNED_SHORT, (GLvoid*)((4 * patr) * sizeof(GLushort)));
-	}
-}
-
 //	Functia de desenare a graficii pe ecran;
 void RenderFunction(void)
 {
@@ -213,9 +213,12 @@ void RenderFunction(void)
 
 	SetMVP();
 
-	// Matricea de modelare 
+	// Matricea de modelare - aplicam rotatiile cand importam modele, ca sa le pun "in picioare"
 	myMatrix = glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(0.0, 1.0, 0.0))
 		* glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(0.0, 0.0, 1.0));
+
+	//myMatrix = glm::mat4(1.0f);
+	//glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &myMatrix[0][0]);
 
 	// matricea pentru umbra
 	float D = -20.0f;
@@ -224,17 +227,27 @@ void RenderFunction(void)
 	matrUmbra[1][0] = 0; matrUmbra[1][1] = zL + D; matrUmbra[1][2] = 0; matrUmbra[1][3] = 0;
 	matrUmbra[2][0] = -xL; matrUmbra[2][1] = -yL; matrUmbra[2][2] = D; matrUmbra[2][3] = -1;
 	matrUmbra[3][0] = -D * xL; matrUmbra[3][1] = -D * yL; matrUmbra[3][2] = -D * zL; matrUmbra[3][3] = zL;
+
 	glUniformMatrix4fv(matrUmbraLocation, 1, GL_FALSE, &matrUmbra[0][0]);
-
 	glUniform3f(lightPosLocation, obsX, obsY, obsZ);
-
 	glUniform1i(codColLocation, 0);
+
+	// optiune efect de ceata sau nu -> extindem ulterior pentru setari mai complexe
+	switch (renderMode) {
+		case NO_FOG:
+			glUniform1i(glGetUniformLocation(ProgramId, "fogEnable"), 0);
+			break;
+		case FOG:
+			glUniform1i(glGetUniformLocation(ProgramId, "fogEnable"), 1);
+			break;
+	}
+
 
 	// desenare ground
 	glBindVertexArray(ground.vaoId);
 	mat = glm::mat4(1.0f);
 	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &mat[0][0]);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+	glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, 0);
 
 
 	glUniform1i(objectLocation, 0); // 0 - generat procedural
@@ -242,46 +255,38 @@ void RenderFunction(void)
 	// SFERA 1 - in centru (nu modific matricea)
 	glBindVertexArray(sfera.vaoId);
 	modelMatrix = myMatrix;
-	RenderSphere(modelMatrix);
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 	// SFERA 2 - micsorata si translatata deasupra primei sfere
 	scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.7, 0.7, 0.7));
 	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -28.0));
 	modelMatrix = translateSphere * scaleSphere * myMatrix;
-	RenderSphere(modelMatrix);
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 	// SFERA 3 - micsorata si translatata (si mai mult)
 	scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 0.4));
 	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -48.0));
 	modelMatrix = translateSphere * scaleSphere * myMatrix;
-	RenderSphere(modelMatrix);
-
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 	glUniform1i(objectLocation, 2);
 	scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.05, 0.05, 0.05));
 	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(-4.0, 6.0, -52.0));
 	modelMatrix = translateSphere * scaleSphere * myMatrix;
-	RenderSphere(modelMatrix);
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(4.0, 6.0, -52.0));
 	modelMatrix = translateSphere * scaleSphere * myMatrix;
-	RenderSphere(modelMatrix);
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 	glUniform1i(objectLocation, 0);
 	scaleCone = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 1.0));
 	translateCone = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 12.0, -50.0));
 	rotateCone = glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(1.0, 0.0, 0.0));
 	modelMatrix = translateCone * rotateCone * scaleCone;
-	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-
-	// CONUL - scalat, rotit si translatat
+	
 	glBindVertexArray(con.vaoId);
-	for (int patr = 0; patr < NR_VF_CON; patr++)
-	{
-		if ((patr + 1) % (NR_PARR_CON + 1) != 0) // nu sunt considerate fetele in care in stanga jos este Polul Nord
-			glDrawElements(GL_QUADS, 4, GL_UNSIGNED_SHORT, (GLvoid*)((4 * patr) * sizeof(GLushort)));
-	}
-
+	con.Render(myMatrixLocation, modelMatrix);
 
 	// --------------- DESENARE UMBRE ----------------------------
 	glUniform1i(codColLocation, 1);
@@ -291,30 +296,30 @@ void RenderFunction(void)
 	// SFERA 1 - in centru (nu modific matricea)
 	glBindVertexArray(sfera.vaoId);
 	modelMatrix = myMatrix;
-	RenderSphere(modelMatrix);
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 	// SFERA 2 - micsorata si translatata deasupra primei sfere
 	scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.7, 0.7, 0.7));
 	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -28.0));
 	modelMatrix = translateSphere * scaleSphere * myMatrix;
-	RenderSphere(modelMatrix);
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 	// SFERA 3 - micsorata si translatata (si mai mult)
 	scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 0.4));
 	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -48.0));
 	modelMatrix = translateSphere * scaleSphere * myMatrix;
-	RenderSphere(modelMatrix);
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 
 	glUniform1i(objectLocation, 2);
 	scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.05, 0.05, 0.05));
 	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(-4.0, 6.0, -52.0));
 	modelMatrix = translateSphere * scaleSphere * myMatrix;
-	RenderSphere(modelMatrix);
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(4.0, 6.0, -52.0));
 	modelMatrix = translateSphere * scaleSphere * myMatrix;
-	RenderSphere(modelMatrix);
+	sfera.Render(myMatrixLocation, modelMatrix);
 
 	glUniform1i(objectLocation, 0);
 	scaleCone = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 1.0));
@@ -323,13 +328,9 @@ void RenderFunction(void)
 	modelMatrix = translateCone * rotateCone * scaleCone;
 	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
 
-	// CONUL - scalat, rotit si translatat
+	// CONUL 
 	glBindVertexArray(con.vaoId);
-	for (int patr = 0; patr < NR_VF_CON; patr++)
-	{
-		if ((patr + 1) % (NR_PARR_CON + 1) != 0) // nu sunt considerate fetele in care in stanga jos este Polul Nord
-			glDrawElements(GL_QUADS, 4, GL_UNSIGNED_SHORT, (GLvoid*)((4 * patr) * sizeof(GLushort)));
-	}
+	con.Render(myMatrixLocation, modelMatrix);
 
 	glutSwapBuffers();
 	glFlush();
@@ -350,6 +351,13 @@ int main(int argc, char* argv[])
 	glutKeyboardFunc(processNormalKeys);
 	glutSpecialFunc(processSpecialKeys);
 	glutCloseFunc(Cleanup);
+
+	//	Initializarea meniului - activat prin click dreapta in aplicatie;
+	glutCreateMenu(Menu);
+	glutAddMenuEntry("No fog", NO_FOG);
+	glutAddMenuEntry("Fog", FOG);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+
 	glutMainLoop();
 }
 

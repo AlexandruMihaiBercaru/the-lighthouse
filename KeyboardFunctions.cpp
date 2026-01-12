@@ -28,7 +28,7 @@ void KeyboardFunctions::ProcessSpecialKeys(int key, int xx, int yy, CameraParame
 	case GLUT_KEY_RIGHT:
 		params.beta += 0.01;
 		break;
-	case GLUT_KEY_UP:
+	case GLUT_KEY_F6:
 		params.alpha += params.incrAlpha1;
 		if (abs(params.alpha - params.PI / 2) < 0.05)
 		{

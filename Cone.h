@@ -9,4 +9,5 @@ public:
 	float PI;
 	Cone(int nrParr, int nrMerid);
 	void Create() override;
+	void Render(GLuint matLoc, glm::mat4 modelMatrix);
 };
