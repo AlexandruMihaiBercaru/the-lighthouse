@@ -19,6 +19,8 @@
 #include "Sfera.h"
 #include "Cone.h"
 
+#include "Fireworks.h"
+
 //  Identificatorii obiectelor de tip OpenGL;
 GLuint
 VaoId, VboId, // pt modelul importat (daca folosim objLoader)
@@ -31,7 +33,8 @@ objectLocation,
 codColLocation,
 lightPosLocation,
 matrUmbraLocation,
-projLocation;
+projLocation,
+fireworksProgramId;
 
 // Valoarea lui pi
 float PI = 3.141592;
@@ -64,6 +67,7 @@ float xL = 500.f, yL = 100.f, zL = 200.f;
 // matricea umbrei
 float matrUmbra[4][4];
 
+Fireworks fireworks;
 CameraParameters cameraParams;
 Ground ground;
 int NR_PARR_SFERA = 10, NR_MERID_SFERA = 20;
@@ -133,6 +137,10 @@ void CreateShaders(void)
 {
 	ProgramId = LoadShaders("10_Sol_Shader.vert", "10_Sol_Shader.frag");
 	glUseProgram(ProgramId);
+
+	fireworksProgramId = LoadShadersTessGeom("Bezier_Shader.vert", "Bezier_Shader.tcs", "Bezier_Shader.tes", "Bezier_Shader.geom", "Bezier_Shader.frag");
+	fireworks.setProgramId(fireworksProgramId);
+
 }
 
 // Elimina obiectele de tip shader dupa rulare;
