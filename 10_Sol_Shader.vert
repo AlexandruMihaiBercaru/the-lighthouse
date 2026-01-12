@@ -46,13 +46,17 @@ void main(void)
     // Atribute ale varfurilor
     FragPos = mat3(myMatrix) * in_Position;
     Normal = mat3(myMatrix) * in_Normal;
-    // Pozitia observatorului
-    inViewPos = vec3(myMatrix * vec4(viewPos, 1.0f));;
+    
 
     // Pozitia sursei de lumina (coincide cu a observatorului)
+
+    // Pozitia observatorului
+    //inViewPos = vec3(myMatrix * vec4(viewPos, 1.0f));;
+    inLightPos = vec3(myMatrix * vec4(lightPos, 1.0f));
     // Sursa de lumina
     //inLightPos = vec3(myMatrix * vec4(lightPos, 1.0f));
-    inLightPos = vec3(myMatrix * vec4(lightPos, 1.0f));;
+    inViewPos = vec3(myMatrix * vec4(viewPos, 1.0f));
+
     
     // Pozitia sursei de lumina (diferita de a observatorului)
     // inLightPos = vec3(5.0, 5.0, 7.0);
@@ -63,9 +67,6 @@ void main(void)
         switch(objectId){
             case 0:
                  ex_Color = vec4(in_Color, 1.0);
-                 break;
-            case 1:
-                 ex_Color=vec4(0.2, 0.7, 0.3, 1.0);
                  break;
             case 2:
                 ex_Color = vec4(0.05, 0.05, 0.05, 1.0);

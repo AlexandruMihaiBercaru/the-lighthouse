@@ -10,4 +10,5 @@ public:
 	float PI;
 	Sfera(int nrParr, int nrMerid, float radius);
 	void Create() override;
+	void Render(GLuint matLoc, glm::mat4 modelMatrix);
 };

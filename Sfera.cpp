@@ -89,3 +89,15 @@ void Sfera::Create()
 	glEnableVertexAttribArray(2); // atributul 2 = culoare
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(Vertices.size() * sizeof(glm::vec4) + Normals.size() * sizeof(glm::vec3)));
 }
+
+
+void Sfera::Render(GLuint matLoc, glm::mat4 modelMatrix)
+{
+	glUniformMatrix4fv(matLoc, 1, GL_FALSE, &modelMatrix[0][0]);
+	int NR_VF = (nrParr + 1) * (nrMerid + 1);
+	for (int patr = 0; patr < NR_VF; patr++)
+	{
+		if ((patr + 1) % (nrParr + 1) != 0) // nu sunt considerate fetele in care in stanga jos este Polul Nord
+			glDrawElements(GL_QUADS, 4, GL_UNSIGNED_SHORT, (GLvoid*)((4 * patr) * sizeof(GLushort)));
+	}
+}

@@ -24,6 +24,7 @@ vec3 lightColor = vec3 (0.95, 0.95, 0.98);
 vec3 objectColor = ex_Color.xyz;
 uniform int codCol;
 uniform int objectId;
+uniform int fogEnable;
 void main(void)
   {
     //efectul de ceata - implementarea 1
@@ -44,7 +45,7 @@ void main(void)
     
     if (codCol == 0){
         //  Ambient;
-        float ambientStrength = 0.2f;
+        float ambientStrength = 0.5f;
         vec3 ambient_light = ambientStrength * lightColor;          //  ambient_light=ambientStrength*lightColor; 
         vec3 ambient_term= ambient_light * objectColor;             //  ambient_material=objectColor;
   	
@@ -56,7 +57,7 @@ void main(void)
         vec3 diffuse_term = diff * diffuse_light *  objectColor;     //  diffuse_material=objectColor;
     
         //  Specular;
-        float specularStrength = 0.5f;
+        float specularStrength = 0.2f;
         float shininess = 1.0f;
         vec3 viewDir = normalize(inViewPos - FragPos);              //  versorul catre observator;
         vec3 reflectDir = normalize(reflect(-lightDir, norm));      //  versorul vectorului R;
@@ -68,18 +69,26 @@ void main(void)
         vec3 emission=vec3(0.0, 0.0, 0.0);
         vec3 result = emission + (ambient_term + diffuse_term + specular_term);
 
-        if (objectId == 0 || objectId == 1)
-            {
-                vec4 color_fog = vec4(mix(fogColor, result, fogFactor), 1.0);
-	            out_Color = color_fog;
-            }
-        else
-            out_Color = vec4(result, 1.0);
+        // daca vrem setarea cu ceata
+        if (fogEnable == 1){         
+            vec4 color_fog = vec4(mix(fogColor, result, fogFactor), 1.0);
+	        out_Color = color_fog;
+        }    
+            else{
+                out_Color = vec4(result, 1.0);
         }
+            
+    }
+        
 
-    if (codCol == 1){
+    if (codCol == 1){ // pentru umbre
         vec3 black = vec3 (0.0, 0.0, 0.0);
-        vec4 color_fog = vec4(mix(fogColor, black, fogFactor), 1.0);
-		out_Color = color_fog;
+        if (fogEnable == 0){
+            out_Color = vec4(black, 1.0);
+        }
+        else{
+            vec4 color_fog = vec4(mix(fogColor, black, fogFactor), 1.0);
+		    out_Color = color_fog;
+        }
     }
     }
