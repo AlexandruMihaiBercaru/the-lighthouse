@@ -4,7 +4,7 @@
 #include <cmath>
 
 
-void KeyboardFunctions::ProcessNormalKeys(unsigned char key, int x, int y, CameraParameters& params) 
+void KeyboardFunctions::ProcessNormalKeys(unsigned char key, int x, int y, CameraParameters& params, Fireworks& fireworksHandler)
 {
 	switch (key) {
 	case '+':
@@ -14,6 +14,26 @@ void KeyboardFunctions::ProcessNormalKeys(unsigned char key, int x, int y, Camer
 		params.dist += 1;
 		break;
 	}
+
+	if (key == 'f') {
+		// se creeaza o noua explozie de artificii
+		float randX = -50.0f + 100.0f * (float)rand() / RAND_MAX;
+		float randY = -50.0f + 100.0f * (float)rand() / RAND_MAX;
+
+		float numCurves = 20 + rand() % 30; // intre 20 si 50 de curbe
+		float radius = 20.0f + 30.0f * (float)rand() / RAND_MAX; // intre 20 si 50
+		float particleSize = 1.0f + 1.0f * (float)rand() / RAND_MAX; // intre 1 si 2
+
+		fireworksHandler.CreateExplosion(glm::vec3(randX, randY, -100.0f), numCurves, radius, particleSize, 2.5f);
+		std::cout << "New explosion!";
+		glutPostRedisplay();
+	}
+
+	if (key == 'c') {
+		// se reseteaza animatia
+		glutPostRedisplay();
+	}
+
 	if (key == 27)
 		exit(0);
 }
