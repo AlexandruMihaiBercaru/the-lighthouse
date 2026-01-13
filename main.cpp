@@ -20,6 +20,8 @@
 #include "Sfera.h"
 #include "Cone.h"
 #include "Cilindru.h"
+//#include <assimp/ass>
+#include "Dock.h"
 
 #include "Fireworks.h"
 
@@ -91,6 +93,7 @@ Cilindru cil(NR_PARR_CIL, NR_MERID_CIL, 20.0f, 40.0f);
 Cilindru bazaFar(NR_PARR_CIL, NR_MERID_CIL, 30.0f, 3.0f);
 Cilindru corpFar(NR_PARR_CIL, NR_MERID_CIL, 20.0f, 40.0f);
 Cilindru stalpFar(NR_PARR_CIL, NR_MERID_CIL, 1.0f, 10.0f);
+Dock dock(15.0f, 15.0f, 3.0f, 15);
 
 //	Identificatori optiuni meniu;
 enum {
@@ -216,6 +219,7 @@ void Initialize(void)
 	bazaFar.Create();
 	corpFar.Create();
 	stalpFar.Create();
+	dock.Create();
 	LoadTexture("grass.jpg", groundTexture);
 	LoadTexture("water.png", waterTexture); //inca nu am gasit
 
@@ -424,6 +428,14 @@ void RenderFunction(void)
 	myMatrix = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 1.0, 0.0))
 		* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 0.0, 1.0));
 	RenderFar();
+	glUniform1i(codCol, 0);
+
+	glUniform1i(objectLocation, 0);
+
+	glBindVertexArray(dock.vaoId);
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(40.0f, 100.0f, -2.0f));
+	dock.Render(myMatrixLocation, myMatrix);
+
 
 	//Cilindru
 	//glUniform1i(objectLocation, 0); 
