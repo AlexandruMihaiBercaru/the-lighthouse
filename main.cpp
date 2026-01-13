@@ -38,6 +38,7 @@ objectLocation,
 codColLocation,
 lightPosLocation,
 matrUmbraLocation,
+matrUmbraApaLocation,
 projLocation,
 groundTexture,
 waterTexture,
@@ -71,9 +72,11 @@ vX = 0.0f, vY = 0.0f, vZ = 1.0f;
 float width = 800, height = 600, dNear = 3.f, fov = 30;
 
 // sursa de lumina
-float xL = 500.f, yL = 100.f, zL = 200.f;
+float xL = -300.f, yL = 500.f, zL = 200.f;
 // matricea umbrei
 float matrUmbra[4][4];
+float matrUmbraApa[4][4];
+
 
 Fireworks fireworks;
 float lastTime = 0.0f;
@@ -236,6 +239,8 @@ void Initialize(void)
 	//lightColorLocation = glGetUniformLocation(ProgramId, "lightColor");
 	lightPosLocation = glGetUniformLocation(ProgramId, "lightPos");
 	matrUmbraLocation = glGetUniformLocation(ProgramId, "matrUmbra");
+	matrUmbraApaLocation = glGetUniformLocation(ProgramId, "matrUmbraApa");
+
 	codColLocation = glGetUniformLocation(ProgramId, "codCol");
 
 	// Variabile ce pot fi transmise catre shader
@@ -267,7 +272,7 @@ void SetMVP(void)
 
 void RenderFar() {
 
-	glUniform1i(codCol, 0); // 0 - generat procedural
+	//glUniform1i(codCol, 0); // 0 - generat procedural
 
 	/*scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 0.4));
 	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -48.0));*/
@@ -384,6 +389,15 @@ void RenderFunction(void)
 	matrUmbra[2][0] = -xL; matrUmbra[2][1] = -yL; matrUmbra[2][2] = D; matrUmbra[2][3] = -1;
 	matrUmbra[3][0] = -D * xL; matrUmbra[3][1] = -D * yL; matrUmbra[3][2] = -D * zL; matrUmbra[3][3] = zL;
 
+	D = -40.0f;
+	matrUmbraApa[0][0] = zL + D; matrUmbraApa[0][1] = 0; matrUmbraApa[0][2] = 0; matrUmbraApa[0][3] = 0;
+	matrUmbraApa[1][0] = 0; matrUmbraApa[1][1] = zL + D; matrUmbraApa[1][2] = 0; matrUmbraApa[1][3] = 0;
+	matrUmbraApa[2][0] = -xL; matrUmbraApa[2][1] = -yL; matrUmbraApa[2][2] = D; matrUmbraApa[2][3] = -1;
+	matrUmbraApa[3][0] = -D * xL; matrUmbraApa[3][1] = -D * yL; matrUmbraApa[3][2] = -D * zL; matrUmbraApa[3][3] = zL;
+
+
+	glUniformMatrix4fv(matrUmbraApaLocation, 1, GL_FALSE, &matrUmbraApa[0][0]);
+
 	glUniformMatrix4fv(matrUmbraLocation, 1, GL_FALSE, &matrUmbra[0][0]);
 	glUniform3f(lightPosLocation, obsX, obsY, obsZ);
 	glUniform1i(codColLocation, 0);
@@ -427,7 +441,7 @@ void RenderFunction(void)
 	
 	myMatrix = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 1.0, 0.0))
 		* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 0.0, 1.0));
-	RenderFar();
+	//RenderFar();
 	glUniform1i(codCol, 0);
 
 	glUniform1i(objectLocation, 0);
@@ -435,21 +449,37 @@ void RenderFunction(void)
 	glBindVertexArray(dock.vaoId);
 	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(40.0f, 100.0f, -2.0f));
 	dock.Render(myMatrixLocation, myMatrix);
+	fireworks.Render(projection, view, 32);
 
 
 	//Cilindru
-	//glUniform1i(objectLocation, 0); 
+	glUniform1i(codColLocation, 0);
+	glUniform1i(objectLocation, 0); 
 	//glBindVertexArray(cil.vaoId);
-	//modelMatrix = myMatrix;
+	//modelMatrix = glm::translate(glm::mat4(1.0f),glm::vec3(-10.0f,0.0f,-10.0f));
 	//cil.Render(myMatrixLocation, modelMatrix);
-
+	RenderFar();
+		
 	// --------------- DESENARE UMBRE ----------------------------
 	//UmbraCilindru
-	//glUniform1i(codColLocation, 1);
-	//glUniform1i(objectLocation, 0); // 0 - generat procedural
+	glUniform1i(codColLocation, 1);
+	glUniform1i(objectLocation, 0); // 0 - generat procedural
 	//cil.Render(myMatrixLocation, modelMatrix);
+	RenderFar();
 
-	fireworks.Render(projection, view, 32);
+	//glUniform1i(objectLocation, 0);
+
+	//myMatrix = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 1.0, 0.0))
+	//	* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 0.0, 1.0));
+	//RenderFar();
+	glUniform1i(codColLocation, -1);
+
+	glBindVertexArray(dock.vaoId);
+	float offs = 20.0f;
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-offs+40.0f, offs+100.0f, -2.0f));
+	dock.Render(myMatrixLocation, myMatrix);
+
+
 	glUseProgram(ProgramId);
 
 	glutSwapBuffers();
