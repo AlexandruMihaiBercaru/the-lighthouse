@@ -1,6 +1,9 @@
 #gitignore
 
-include
+include/*
+!include/model.h
+!include/mesh.h
+!include/stb_image.h
 lib
 src
 x64

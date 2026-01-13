@@ -29,6 +29,7 @@ uniform int objectId;
 uniform int fogEnable;
 uniform sampler2D ourTexture;
 uniform sampler2D ourTexture1;
+uniform sampler2D texture_diffuse1; // Assimp loads this name by default -> pentru modele
 
 void main(void)
   {
@@ -105,6 +106,10 @@ void main(void)
 
      if(objectId == 8){ //texturi
             out_Color = texture(ourTexture,TexCoord)  *p+ out_Color*(1-p);
+     }
+
+     if(objectId == 9){
+            out_Color = texture(texture_diffuse1,TexCoord);
      }
 
 
