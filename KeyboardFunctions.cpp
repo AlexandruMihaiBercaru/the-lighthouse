@@ -8,10 +8,10 @@ void KeyboardFunctions::ProcessNormalKeys(unsigned char key, int x, int y, Camer
 {
 	switch (key) {
 	case '+':
-		params.dist -= 1;	//	apasarea tastelor `-` si `+` schimba pozitia observatorului (se departeaza / aproprie);
+		params.dist -= 2;	//	apasarea tastelor `-` si `+` schimba pozitia observatorului (se departeaza / aproprie);
 		break;
-	case '-':
-		params.dist += 1;
+	case '=':
+		params.dist += 2;
 		break;
 	}
 
@@ -43,12 +43,12 @@ void KeyboardFunctions::ProcessSpecialKeys(int key, int xx, int yy, CameraParame
 	switch (key)				//	Procesarea tastelor 'LEFT', 'RIGHT', 'UP', 'DOWN';
 	{							//	duce la deplasarea observatorului pe suprafata sferica in jurul cubului;
 	case GLUT_KEY_LEFT:
-		params.beta -= 0.01;
+		params.beta -= 0.05;
 		break;
 	case GLUT_KEY_RIGHT:
-		params.beta += 0.01;
+		params.beta += 0.05;
 		break;
-	case GLUT_KEY_F6:
+	case GLUT_KEY_UP:
 		params.alpha += params.incrAlpha1;
 		if (abs(params.alpha - params.PI / 2) < 0.05)
 		{
@@ -56,7 +56,7 @@ void KeyboardFunctions::ProcessSpecialKeys(int key, int xx, int yy, CameraParame
 		}
 		else
 		{
-			params.incrAlpha1 = 0.01f;
+			params.incrAlpha1 = 0.05f;
 		}
 		break;
 	case GLUT_KEY_DOWN:
@@ -67,7 +67,7 @@ void KeyboardFunctions::ProcessSpecialKeys(int key, int xx, int yy, CameraParame
 		}
 		else
 		{
-			params.incrAlpha2 = 0.01f;
+			params.incrAlpha2 = 0.05f;
 		}
 		break;
 	}
