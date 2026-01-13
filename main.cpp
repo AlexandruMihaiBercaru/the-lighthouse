@@ -7,7 +7,7 @@
 #include <iostream>
 #include <GL/glew.h> // glew apare inainte de freeglut
 #include <GL/freeglut.h> // nu trebuie uitat freeglut.h
-#include <SOIL.h>
+//#include <SOIL.h>
 #include "loadShaders.h"
 #include "glm/glm.hpp"  
 #include "glm/gtc/matrix_transform.hpp"
@@ -20,8 +20,8 @@
 #include "Sfera.h"
 #include "Cone.h"
 #include "Cilindru.h"
-
-#include "Fireworks.h"
+#include "Fireworks.h"	
+#include "Model.h" // contine #include "stb_image.h"
 
 //  Identificatorii obiectelor de tip OpenGL;
 
@@ -91,6 +91,8 @@ Cilindru cil(NR_PARR_CIL, NR_MERID_CIL, 20.0f, 40.0f);
 Cilindru bazaFar(NR_PARR_CIL, NR_MERID_CIL, 30.0f, 3.0f);
 Cilindru corpFar(NR_PARR_CIL, NR_MERID_CIL, 20.0f, 40.0f);
 Cilindru stalpFar(NR_PARR_CIL, NR_MERID_CIL, 1.0f, 10.0f);
+
+Model* tree;
 
 //	Identificatori optiuni meniu;
 enum {
@@ -190,7 +192,10 @@ void LoadTexture(const char* texturePath, GLuint& texture)
 	// Incarcarea texturii si transferul datelor in obiectul textura; 
 	int widthTexture, heightTexture;
 	unsigned char* image = SOIL_load_image(texturePath, &widthTexture, &heightTexture, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widthTexture, heightTexture, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	if (image != nullptr)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widthTexture, heightTexture, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	else
+		std::cout << "Error! " << texturePath << std::endl;
 
 	// Eliberarea resurselor
 	SOIL_free_image_data(image);
@@ -221,6 +226,9 @@ void Initialize(void)
 
 	CreateShaders();
 	fireworks.Create(); // contine initializari de vao, vbo si variabile uniforme
+
+	// model cu assimp
+	tree = new Model("assets/Tree/Tree.obj");
 
 	// Locatii ptr shader
 	nrVertLocation = glGetUniformLocation(ProgramId, "nrVertices");
@@ -424,6 +432,15 @@ void RenderFunction(void)
 	myMatrix = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 1.0, 0.0))
 		* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 0.0, 1.0));
 	RenderFar();
+
+	
+	glUniform1i(objectLocation, 9); 
+	glm::mat4 modelMat = glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(0.0, 1.0, 0.0));
+		
+	modelMat = glm::scale(modelMat, glm::vec3(1.0f)); // Scale if too big/small
+	if (tree) {
+		tree->Draw(ProgramId);
+	}
 
 	//Cilindru
 	//glUniform1i(objectLocation, 0); 
