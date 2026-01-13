@@ -7,7 +7,7 @@
 void KeyboardFunctions::ProcessNormalKeys(unsigned char key, int x, int y, CameraParameters& params, Fireworks& fireworksHandler)
 {
 	switch (key) {
-	case '+':
+	case '-':
 		params.dist -= 2;	//	apasarea tastelor `-` si `+` schimba pozitia observatorului (se departeaza / aproprie);
 		break;
 	case '=':

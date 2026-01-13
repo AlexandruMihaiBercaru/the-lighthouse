@@ -4,17 +4,17 @@ void Ground::Create() {
 	// varfurile 
 	GLfloat Vertices[] =
 	{
-		// coordonate                   // culori			// normale
+		// coordonate                   // culori			// normale					//texturare
 		// varfuri "ground"
-	   -1500.0f,  -1500.0f, 20.5f, 1.0f,	0.35f, 0.65f, 0.35f,	0.0f, 0.0f, 1.0f,
-		50.0f,  -1500.0f, 20.5f, 1.0f,		0.35f, 0.65f, 0.35f,	0.0f, 0.0f, 1.0f,
-		50.0f,  1500.0f,  20.5f, 1.0f,		0.35f, 0.65f, 0.35f,	0.0f, 0.0f, 1.0f,
-	   -1500.0f,  1500.0f,  20.5f, 1.0f,	0.35f, 0.65f, 0.35f,	0.0f, 0.0f, 1.0f,
+	   -1500.0f,  -1500.0f, 20.5f, 1.0f,	0.35f, 0.65f, 0.35f,	0.0f, 0.0f, 1.0f,	0.0f,0.0f,
+		50.0f,  -1500.0f, 20.5f, 1.0f,		0.35f, 0.65f, 0.35f,	0.0f, 0.0f, 1.0f,	50.0f,0.0f,
+		50.0f,  1500.0f,  20.5f, 1.0f,		0.35f, 0.65f, 0.35f,	0.0f, 0.0f, 1.0f,	50.0f,50.0f,
+	   -1500.0f,  1500.0f,  20.5f, 1.0f,	0.35f, 0.65f, 0.35f,	0.0f, 0.0f, 1.0f,	0.0f,50.0f,
 
-	   50.0f,  -1500.0f,  40.5f, 1.0f,		0.98f, 0.94f, 0.81f,	0.0f, 0.0f, 1.0f,
-	   1500.0f,  -1500.0f,  40.5f, 1.0f,	0.98f, 0.94f, 0.81f,	0.0f, 0.0f, 1.0f,
-	   1500.0f,  1500.0f,	40.5f, 1.0f,	0.98f, 0.94f, 0.81f,	0.0f, 0.0f, 1.0f,
-	   50.0f,  1500.0f,  40.5f, 1.0f,		0.98f, 0.94f, 0.81f,	0.0f, 0.0f, 1.0f,
+	   50.0f,  -1500.0f,  40.5f, 1.0f,		0.98f, 0.94f, 0.81f,	0.0f, 0.0f, 1.0f,	25.0f,0.0f,
+	   1500.0f,  -1500.0f,  40.5f, 1.0f,	0.98f, 0.94f, 0.81f,	0.0f, 0.0f, 1.0f,	25.0f,5.0f,
+	   1500.0f,  1500.0f,	40.5f, 1.0f,	0.98f, 0.94f, 0.81f,	0.0f, 0.0f, 1.0f,	0.0f,5.0f,
+	   50.0f,  1500.0f,  40.5f, 1.0f,		0.98f, 0.94f, 0.81f,	0.0f, 0.0f, 1.0f,	0.0f,0.0f,
 	};
 
 	// indicii pentru varfuri
@@ -32,12 +32,15 @@ void Ground::Create() {
 
 	// atributul 0 = pozitie
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 10 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)0);
 	// atributul 1 = normale
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(GLfloat), (GLvoid*)(7 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(7 * sizeof(GLfloat)));
 	// atributul 2 = culoare
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(GLfloat), (GLvoid*)(4 * sizeof(GLfloat)));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(4 * sizeof(GLfloat)));
+	// atributul 3 = texturare
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(10 * sizeof(GLfloat)));
 
 }

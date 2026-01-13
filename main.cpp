@@ -7,6 +7,7 @@
 #include <iostream>
 #include <GL/glew.h> // glew apare inainte de freeglut
 #include <GL/freeglut.h> // nu trebuie uitat freeglut.h
+#include <SOIL.h>
 #include "loadShaders.h"
 #include "glm/glm.hpp"  
 #include "glm/gtc/matrix_transform.hpp"
@@ -23,6 +24,7 @@
 #include "Fireworks.h"
 
 //  Identificatorii obiectelor de tip OpenGL;
+
 GLuint
 VaoId, VboId, // pt modelul importat (daca folosim objLoader)
 ProgramId,
@@ -35,7 +37,10 @@ codColLocation,
 lightPosLocation,
 matrUmbraLocation,
 projLocation,
+groundTexture,
+waterTexture,
 fireworksProgramId;
+
 
 // Valoarea lui pi
 float PI = 3.141592;
@@ -72,15 +77,16 @@ Fireworks fireworks;
 float lastTime = 0.0f;
 CameraParameters cameraParams;
 Ground ground;
+
 int NR_PARR_SFERA = 10, NR_MERID_SFERA = 20;
 float radius = 20;
 Sfera sfera(NR_PARR_SFERA, NR_MERID_SFERA, radius);
+
 int NR_PARR_CON = 18, NR_MERID_CON = 12;
 Cone con(NR_PARR_CON, NR_MERID_CON);
+
 int NR_PARR_CIL = 6, NR_MERID_CIL = 20;
 Cilindru cil(NR_PARR_CIL, NR_MERID_CIL, 20.0f, 40.0f);
-
-
 
 Cilindru bazaFar(NR_PARR_CIL, NR_MERID_CIL, 30.0f, 3.0f);
 Cilindru corpFar(NR_PARR_CIL, NR_MERID_CIL, 20.0f, 40.0f);
@@ -166,6 +172,30 @@ void Cleanup(void)
 	DestroyVBO();
 };
 
+
+//	Functia de incarcare a texturilor in program;
+void LoadTexture(const char* texturePath, GLuint& texture)
+{
+	// Generarea unui obiect textura si legarea acestuia;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	//	Desfasurarea imaginii pe orizontala/verticala in functie de parametrii de texturare;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Modul in care structura de texeli este aplicata pe cea de pixeli;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	// Incarcarea texturii si transferul datelor in obiectul textura; 
+	int widthTexture, heightTexture;
+	unsigned char* image = SOIL_load_image(texturePath, &widthTexture, &heightTexture, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widthTexture, heightTexture, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+	// Eliberarea resurselor
+	SOIL_free_image_data(image);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
 //  Setarea parametrilor necesari pentru fereastra de vizualizare;
 void Initialize(void)
 {
@@ -186,7 +216,8 @@ void Initialize(void)
 	bazaFar.Create();
 	corpFar.Create();
 	stalpFar.Create();
-
+	LoadTexture("grass.jpg", groundTexture);
+	LoadTexture("water.png", waterTexture); //inca nu am gasit
 
 	CreateShaders();
 	fireworks.Create(); // contine initializari de vao, vbo si variabile uniforme
@@ -311,8 +342,6 @@ void RenderFar() {
 
 	glUniform1i(objectLocation, 0); // 0 - generat procedural
 
-
-
 	/*
 
 	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -10.0))
@@ -320,14 +349,7 @@ void RenderFar() {
 
 	baraFar.Render(myMatrixLocation, myMatrix);*/
 
-
-
 }
-
-
-
-
-
 
 //	Functia de desenare a graficii pe ecran;
 void RenderFunction(void)
@@ -372,116 +394,48 @@ void RenderFunction(void)
 			break;
 	}
 
+	//	Transmiterea variabilei uniforme pentru texturare spre shaderul de fragmente;
+	glUniform1i(glGetUniformLocation(ProgramId, "myTexture"), 0);
 
 	// desenare ground
+	glUniform1i(codCol, 0);
+	glUniform1i(objectLocation, 8);
 	glBindVertexArray(ground.vaoId);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, groundTexture);
+	//glUniform1i(glGetUniformLocation(ProgramId, "groundTexture"), 0);
 	mat = glm::mat4(1.0f);
 	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &mat[0][0]);
-	glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, 0);
-	
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE_2D, waterTexture);
 
-	//glUniform1i(objectLocation, 0); // 0 - generat procedural
+	float timeMs = glutGet(GLUT_ELAPSED_TIME);
+	float t = timeMs / 1000.0f; // seconds since start
+	float speed = 0.25f;        // cycles per second (0.25 = one oscillation every 4s)
+	float amplitude = 2.0f;     // movement half-range in world units
+	float center = -150.0f;     // center position on X axis
+	float x = sinf(2.0f * PI * speed * t) * amplitude + center;
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x, 0.0f, 0.0f));
+	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &myMatrix[0][0]);
 
-	//// SFERA 1 - in centru (nu modific matricea)
-	//glBindVertexArray(sfera.vaoId);
-	//modelMatrix = myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//// SFERA 2 - micsorata si translatata deasupra primei sfere
-	//scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.7, 0.7, 0.7));
-	//translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -28.0));
-	//modelMatrix = translateSphere * scaleSphere * myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//// SFERA 3 - micsorata si translatata (si mai mult)
-	//scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 0.4));
-	//translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -48.0));
-	//modelMatrix = translateSphere * scaleSphere * myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//glUniform1i(objectLocation, 2);
-	//scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.05, 0.05, 0.05));
-	//translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(-4.0, 6.0, -52.0));
-	//modelMatrix = translateSphere * scaleSphere * myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(4.0, 6.0, -52.0));
-	//modelMatrix = translateSphere * scaleSphere * myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//glUniform1i(objectLocation, 0);
-	//scaleCone = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 1.0));
-	//translateCone = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 12.0, -50.0));
-	//rotateCone = glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(1.0, 0.0, 0.0));
-	//modelMatrix = translateCone * rotateCone * scaleCone;
-	//
-	//glBindVertexArray(con.vaoId);
-	//con.Render(myMatrixLocation, modelMatrix);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)(6));
+	glUniform1i(objectLocation, 0);
 	
 	myMatrix = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 1.0, 0.0))
 		* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 0.0, 1.0));
 	RenderFar();
 
 	//Cilindru
-	//glUniform1d(objectLocation, 0); 
+	//glUniform1i(objectLocation, 0); 
 	//glBindVertexArray(cil.vaoId);
 	//modelMatrix = myMatrix;
 	//cil.Render(myMatrixLocation, modelMatrix);
 
 	// --------------- DESENARE UMBRE ----------------------------
-
-	
 	//UmbraCilindru
 	//glUniform1i(codColLocation, 1);
-
 	//glUniform1i(objectLocation, 0); // 0 - generat procedural
-
 	//cil.Render(myMatrixLocation, modelMatrix);
-
-
-	
-	//// SFERA 1 - in centru (nu modific matricea)
-	//glBindVertexArray(sfera.vaoId);
-	//modelMatrix = myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//// SFERA 2 - micsorata si translatata deasupra primei sfere
-	//scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.7, 0.7, 0.7));
-	//translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -28.0));
-	//modelMatrix = translateSphere * scaleSphere * myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//// SFERA 3 - micsorata si translatata (si mai mult)
-	//scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 0.4));
-	//translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -48.0));
-	//modelMatrix = translateSphere * scaleSphere * myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//glUniform1i(objectLocation, 2);
-	//scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.05, 0.05, 0.05));
-	//translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(-4.0, 6.0, -52.0));
-	//modelMatrix = translateSphere * scaleSphere * myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//glUniform1i(objectLocation, 2);
-	//scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.05, 0.05, 0.05));
-	//translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(-4.0, 6.0, -52.0));
-	//modelMatrix = translateSphere * scaleSphere * myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(4.0, 6.0, -52.0));
-	//modelMatrix = translateSphere * scaleSphere * myMatrix;
-	//sfera.Render(myMatrixLocation, modelMatrix);
-
-	//glUniform1i(objectLocation, 0);
-	//scaleCone = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 1.0));
-	//translateCone = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 12.0, -50.0));
-	//rotateCone = glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(1.0, 0.0, 0.0));
-	//modelMatrix = translateCone * rotateCone * scaleCone;
-	//glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-	//// CONUL 
-	//glBindVertexArray(con.vaoId);
-	//con.Render(myMatrixLocation, modelMatrix);
 
 	fireworks.Render(projection, view, 32);
 	glUseProgram(ProgramId);

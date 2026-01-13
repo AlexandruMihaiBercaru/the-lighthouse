@@ -13,6 +13,7 @@
 layout(location=0) in vec3 in_Position;
 layout(location=1) in vec3 in_Normal;
 layout(location=2) in vec3 in_Color;
+layout(location=3) in vec2 inTexture;
 
 //  Variabile de iesire;
 out vec3 FragPos;
@@ -20,6 +21,7 @@ out vec3 Normal;
 out vec3 inViewPos;
 out vec3 inLightPos;
 out vec4 ex_Color;
+out vec2 TexCoord;
 
 //  Variabile uniforme;
 uniform int nrVertices;
@@ -32,6 +34,7 @@ uniform mat4 projection;
 uniform mat4 matrUmbra;
 uniform vec3 lightPos;
 
+uniform sampler2D myTexture;
 
 void main(void)
   {
@@ -68,6 +71,7 @@ void main(void)
             case 0:
                  ex_Color = vec4(in_Color, 1.0);
                  break;
+
             case 2:
                 ex_Color = vec4(0.05, 0.05, 0.05, 1.0);
                 break;
@@ -86,6 +90,9 @@ void main(void)
             case 7://wood
                 ex_Color = vec4(0.55, 0.27, 0.07, 1.0);
                 break;
+            case 8://texture;
+                 TexCoord = inTexture;
+                 break;
 
         }
     }
