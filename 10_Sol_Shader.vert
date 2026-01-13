@@ -33,25 +33,32 @@ uniform vec3 viewPos;
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 matrUmbra;
+uniform mat4 matrUmbraApa;
 uniform vec3 lightPos;
 
 uniform sampler2D myTexture;
 
 void main(void)
   {
+
+    
+
     // Transformari in spatiul de modelare
     if (codCol == 0)
         gl_Position = projection * view * myMatrix * vec4(in_Position, 1.0);
-    else if (codCol == 1)
+    else if (codCol == 1){
         gl_Position = projection * view * matrUmbra * myMatrix *  vec4(in_Position, 1.0);
-        
+    }else if(codCol == -1){
+        gl_Position = projection * view * matrUmbraApa * myMatrix *  vec4(in_Position, 1.0);
+    }
 
     // Pentru modelul de iluminare 
     // Atribute ale varfurilor
     FragPos = mat3(myMatrix) * in_Position;
     Normal = mat3(myMatrix) * in_Normal;
-    
 
+
+  
     // Pozitia sursei de lumina (coincide cu a observatorului)
 
     // Pozitia observatorului
@@ -99,4 +106,6 @@ void main(void)
                  break;
         }
     }
+
+
 } 

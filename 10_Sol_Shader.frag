@@ -91,7 +91,7 @@ void main(void)
     }
         
 
-    if (codCol == 1){ // pentru umbre
+    if (abs(codCol) == 1){ // pentru umbre
         vec3 black = vec3 (0.0, 0.0, 0.0);
         if (fogEnable == 0){
             out_Color = vec4(black, 1.0);
