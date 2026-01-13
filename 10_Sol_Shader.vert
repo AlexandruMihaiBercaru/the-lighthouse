@@ -12,8 +12,9 @@
 
 layout(location=0) in vec3 in_Position;
 layout(location=1) in vec3 in_Normal;
-layout(location=2) in vec3 in_Color;
-layout(location=3) in vec2 inTexture;
+layout(location=2) in vec2 inTexture;
+layout(location=3) in vec3 in_Color;
+
 
 //  Variabile de iesire;
 out vec3 FragPos;
@@ -97,10 +98,12 @@ void main(void)
             case 7://wood
                 ex_Color = vec4(0.55, 0.27, 0.07, 1.0);
                 break;
-            case 8://texture;
+            case 8://texture loaded;
                  TexCoord = inTexture;
                  break;
-
+            case 9://texture for imported models;
+                 TexCoord = inTexture;
+                 break;
         }
     }
 
