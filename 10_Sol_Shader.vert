@@ -71,7 +71,22 @@ void main(void)
             case 2:
                 ex_Color = vec4(0.05, 0.05, 0.05, 1.0);
                 break;
+            case 3:
+                ex_Color = vec4(0.1, 0.1, 0.1, 1.0);
+                break;
+            case 4: //white
+                ex_Color = vec4(1.0, 1.0, 1.0, 1.0);
+                break;
+            case 5: //red
+                ex_Color = vec4(1.0, 0.0, 0.0, 1.0);
+                break;
+            case 6: //green
+                ex_Color = vec4(0.0, 1.0, 0.0, 1.0);
+                break;
+            case 7://wood
+                ex_Color = vec4(0.55, 0.27, 0.07, 1.0);
+                break;
+
         }
     }
-   } 
- 
+} 
