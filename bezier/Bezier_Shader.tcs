@@ -1,0 +1,23 @@
+#version 410  core
+
+layout(vertices = 3) out; 
+
+in vec3 vPosition[];
+in vec3 vColor[];
+
+out vec3 tcPosition[];
+out vec3 tcColor[];
+
+
+uniform int tessLevel;  // Number of subdivisions (higher = smoother curve)
+
+void main() {
+    
+    tcPosition[gl_InvocationID] = vPosition[gl_InvocationID];
+    tcColor[gl_InvocationID] = vColor[gl_InvocationID];
+    if (gl_InvocationID == 0){
+        gl_TessLevelOuter[0] = 1.0;
+        gl_TessLevelOuter[1] = float(tessLevel);
+    }
+
+}
