@@ -75,6 +75,12 @@ Cone con(NR_PARR_CON, NR_MERID_CON);
 int NR_PARR_CIL = 6, NR_MERID_CIL = 20;
 Cilindru cil(NR_PARR_CIL, NR_MERID_CIL, 20.0f, 40.0f);
 
+
+
+Cilindru bazaFar(NR_PARR_CIL, NR_MERID_CIL, 30.0f, 3.0f);
+Cilindru corpFar(NR_PARR_CIL, NR_MERID_CIL, 20.0f, 40.0f);
+Cilindru stalpFar(NR_PARR_CIL, NR_MERID_CIL, 1.0f, 10.0f);
+
 //	Identificatori optiuni meniu;
 enum {
 	FOG, NO_FOG
@@ -167,6 +173,12 @@ void Initialize(void)
 	sfera.Create();
 	con.Create();
 	cil.Create();
+
+	bazaFar.Create();
+	corpFar.Create();
+	stalpFar.Create();
+
+
 	CreateShaders();
 
 	// Locatii ptr shader
@@ -206,6 +218,106 @@ void SetMVP(void)
 	projection = glm::infinitePerspective(GLfloat(fov), GLfloat(width) / GLfloat(height), dNear);
 	glUniformMatrix4fv(projLocation, 1, GL_FALSE, &projection[0][0]);
 }
+//Cilindru cil(NR_PARR_CIL, NR_MERID_CIL, 20.0f, 40.0f);
+
+void RenderFar() {
+
+	glUniform1i(codCol, 0); // 0 - generat procedural
+
+	/*scaleSphere = glm::scale(glm::mat4(1.0f), glm::vec3(0.4, 0.4, 0.4));
+	translateSphere = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -48.0));*/
+	//bazaJos
+	glUniform1i(objectLocation, 0); // 0 - generat procedural
+
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, 15.0f));
+	glBindVertexArray(bazaFar.vaoId);
+	bazaFar.Render(myMatrixLocation, myMatrix);
+
+	//corp1-alb
+	glUniform1i(objectLocation, 4); // 0 - generat procedural
+
+	glBindVertexArray(corpFar.vaoId);
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -40.0))
+		* myMatrix;
+	corpFar.Render(myMatrixLocation, myMatrix);
+	//corp2-rosu
+	glUniform1i(objectLocation, 5); // 0 - generat procedural
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -40.0))
+		* myMatrix;
+	corpFar.Render(myMatrixLocation, myMatrix);
+
+	//bazaSus
+	glUniform1i(objectLocation, 2); // 0 - generat procedural
+
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -1.0f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(0.85, 0.85, 1.0f))
+		* myMatrix;
+	glBindVertexArray(bazaFar.vaoId);
+	bazaFar.Render(myMatrixLocation, myMatrix);
+	//stalpi
+
+	glBindVertexArray(stalpFar.vaoId);
+	float radius = 0.80 * 30.0f;
+	int nrStalpi=12;
+	modelMatrix = myMatrix;
+	float ratio = 2 * PI / nrStalpi;
+	for (int i = 0; i < 12; i++) {
+		myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3( radius * sinf( ratio *i) , radius * cosf(ratio * i), -10.0f))
+			* modelMatrix;
+		stalpFar.Render(myMatrixLocation, myMatrix);//exterior
+
+		//tentativa de bare
+		// 
+		// maine fac un obiect de cu circumferinta unui disc deoarece e 
+		// mult mai usor decat sa rotesc niste bare in raport
+		// cu propria lor axa
+		// 
+		//myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(radius * sinf(0.5 * ratio + ratio * i), radius * cosf(0.5 * ratio + ratio * i), -10.0f))
+		//	* glm::rotate(glm::mat4(1.0f), ratio * (i+0.5f) +PI/2, glm::vec3(0.0, 0.0, 1.0))
+		//	* glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(0.0, 1.0,  0.0));
+
+			//* modelMatrix;
+		//stalpFar.Render(myMatrixLocation, myMatrix);//exterior
+
+
+		myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(radius*0.5 * sinf(ratio * i), radius*0.5 * cosf(ratio * i), 10.0f))
+			* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.5f))
+			* modelMatrix;
+		stalpFar.Render(myMatrixLocation, myMatrix);//interior
+	}
+	//Baza sferei de lumina
+
+	glBindVertexArray(bazaFar.vaoId);
+
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -77.5f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(0.5, 0.5, 4.0f));
+	bazaFar.Render(myMatrixLocation, myMatrix);
+	//Con pentru acoperis
+
+	glBindVertexArray(con.vaoId);
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -104.0f))
+		* glm::scale(glm::mat4(1.0f), glm::vec3(2.2f,2.2f,2.5f));
+	con.Render(myMatrixLocation, myMatrix);
+
+	glUniform1i(objectLocation, 0); // 0 - generat procedural
+
+
+
+	/*
+
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0, 0.0, -10.0))
+		* myMatrix;
+
+	baraFar.Render(myMatrixLocation, myMatrix);*/
+
+
+
+}
+
+
+
+
+
 
 //	Functia de desenare a graficii pe ecran;
 void RenderFunction(void)
@@ -294,22 +406,25 @@ void RenderFunction(void)
 	//glBindVertexArray(con.vaoId);
 	//con.Render(myMatrixLocation, modelMatrix);
 	
+	myMatrix = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 1.0, 0.0))
+		* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 0.0, 1.0));
+	RenderFar();
 
 	//Cilindru
-	glUniform1d(objectLocation, 0); 
-	glBindVertexArray(cil.vaoId);
-	modelMatrix = myMatrix;
-	cil.Render(myMatrixLocation, modelMatrix);
+	//glUniform1d(objectLocation, 0); 
+	//glBindVertexArray(cil.vaoId);
+	//modelMatrix = myMatrix;
+	//cil.Render(myMatrixLocation, modelMatrix);
 
 	// --------------- DESENARE UMBRE ----------------------------
 
 	
 	//UmbraCilindru
-	glUniform1i(codColLocation, 1);
+	//glUniform1i(codColLocation, 1);
 
-	glUniform1i(objectLocation, 0); // 0 - generat procedural
+	//glUniform1i(objectLocation, 0); // 0 - generat procedural
 
-	cil.Render(myMatrixLocation, myMatrix);
+	//cil.Render(myMatrixLocation, modelMatrix);
 
 
 	
