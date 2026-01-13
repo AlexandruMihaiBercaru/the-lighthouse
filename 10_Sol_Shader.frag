@@ -16,6 +16,8 @@ in vec3 Normal;
 in vec3 inViewPos;
 in vec3 inLightPos;
 in vec4 ex_Color;
+in vec2 TexCoord;
+
 
 out vec4 out_Color;
 
@@ -25,6 +27,9 @@ vec3 objectColor = ex_Color.xyz;
 uniform int codCol;
 uniform int objectId;
 uniform int fogEnable;
+uniform sampler2D ourTexture;
+uniform sampler2D ourTexture1;
+
 void main(void)
   {
     //efectul de ceata - implementarea 1
@@ -44,6 +49,8 @@ void main(void)
 
     
     if (codCol == 0){
+    
+
         //  Ambient;
         float ambientStrength = 0.5f;
         vec3 ambient_light = ambientStrength * lightColor;          //  ambient_light=ambientStrength*lightColor; 
@@ -77,6 +84,8 @@ void main(void)
             else{
                 out_Color = vec4(result, 1.0);
         }
+
+ 
             
     }
         
@@ -91,4 +100,12 @@ void main(void)
 		    out_Color = color_fog;
         }
     }
-    }
+
+     float p = 0.25f;
+
+     if(objectId == 8){ //texturi
+            out_Color = texture(ourTexture,TexCoord)  *p+ out_Color*(1-p);
+     }
+
+
+}

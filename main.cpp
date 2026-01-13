@@ -7,6 +7,7 @@
 #include <iostream>
 #include <GL/glew.h> // glew apare inainte de freeglut
 #include <GL/freeglut.h> // nu trebuie uitat freeglut.h
+#include <SOIL.h>
 #include "loadShaders.h"
 #include "glm/glm.hpp"  
 #include "glm/gtc/matrix_transform.hpp"
@@ -32,7 +33,9 @@ objectLocation,
 codColLocation,
 lightPosLocation,
 matrUmbraLocation,
-projLocation;
+projLocation,
+groundTexture,
+waterTexture;
 
 // Valoarea lui pi
 float PI = 3.141592;
@@ -157,6 +160,30 @@ void Cleanup(void)
 	DestroyVBO();
 };
 
+
+//	Functia de incarcare a texturilor in program;
+void LoadTexture(const char* texturePath, GLuint& texture)
+{
+	// Generarea unui obiect textura si legarea acestuia;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	//	Desfasurarea imaginii pe orizontala/verticala in functie de parametrii de texturare;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Modul in care structura de texeli este aplicata pe cea de pixeli;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	// Incarcarea texturii si transferul datelor in obiectul textura; 
+	int widthTexture, heightTexture;
+	unsigned char* image = SOIL_load_image(texturePath, &widthTexture, &heightTexture, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, widthTexture, heightTexture, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+	// Eliberarea resurselor
+	SOIL_free_image_data(image);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
 //  Setarea parametrilor necesari pentru fereastra de vizualizare;
 void Initialize(void)
 {
@@ -177,6 +204,9 @@ void Initialize(void)
 	bazaFar.Create();
 	corpFar.Create();
 	stalpFar.Create();
+	LoadTexture("grass.jpg", groundTexture);
+	LoadTexture("water.png", waterTexture); //inca nu am gasit
+
 
 
 	CreateShaders();
@@ -318,7 +348,6 @@ void RenderFar() {
 
 
 
-
 //	Functia de desenare a graficii pe ecran;
 void RenderFunction(void)
 {
@@ -360,13 +389,32 @@ void RenderFunction(void)
 			break;
 	}
 
+	//	Transmiterea variabilei uniforme pentru texturare spre shaderul de fragmente;
+	glUniform1i(glGetUniformLocation(ProgramId, "myTexture"), 0);
 
 	// desenare ground
+	glUniform1i(codCol, 0);
+	glUniform1i(objectLocation, 8);
 	glBindVertexArray(ground.vaoId);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, groundTexture);
+	//glUniform1i(glGetUniformLocation(ProgramId, "groundTexture"), 0);
 	mat = glm::mat4(1.0f);
 	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &mat[0][0]);
-	glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_BYTE, 0);
-	
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE_2D, waterTexture);
+
+	float timeMs = glutGet(GLUT_ELAPSED_TIME);
+	float t = timeMs / 1000.0f; // seconds since start
+	float speed = 0.25f;        // cycles per second (0.25 = one oscillation every 4s)
+	float amplitude = 2.0f;     // movement half-range in world units
+	float center = -150.0f;     // center position on X axis
+	float x = sinf(2.0f * PI * speed * t) * amplitude + center;
+	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(x, 0.0f, 0.0f));
+	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &myMatrix[0][0]);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)(6));
+	glUniform1i(objectLocation, 0);
 
 	//glUniform1i(objectLocation, 0); // 0 - generat procedural
 
@@ -411,7 +459,7 @@ void RenderFunction(void)
 	RenderFar();
 
 	//Cilindru
-	//glUniform1d(objectLocation, 0); 
+	//glUniform1i(objectLocation, 0); 
 	//glBindVertexArray(cil.vaoId);
 	//modelMatrix = myMatrix;
 	//cil.Render(myMatrixLocation, modelMatrix);
