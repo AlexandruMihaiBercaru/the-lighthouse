@@ -20,11 +20,11 @@ void KeyboardFunctions::ProcessNormalKeys(unsigned char key, int x, int y, Camer
 		float randX = -50.0f + 100.0f * (float)rand() / RAND_MAX;
 		float randY = -50.0f + 100.0f * (float)rand() / RAND_MAX;
 
-		float numCurves = 20 + rand() % 30; // intre 20 si 50 de curbe
+		float numCurves = 20 + rand() % 20; // intre 20 si 40 de curbe
 		float radius = 20.0f + 30.0f * (float)rand() / RAND_MAX; // intre 20 si 50
-		float particleSize = 1.0f + 1.0f * (float)rand() / RAND_MAX; // intre 1 si 2
+		float particleSize = 0.5f + 1.0f * (float)rand() / RAND_MAX; // intre 1 si 2
 
-		fireworksHandler.CreateExplosion(glm::vec3(randX, randY, -100.0f), numCurves, radius, particleSize, 2.5f);
+		fireworksHandler.CreateExplosion(glm::vec3(randX, randY, -120.0f), numCurves, radius, particleSize, 2.5f);
 		std::cout << "New explosion!";
 		glutPostRedisplay();
 	}

@@ -458,7 +458,7 @@ void RenderFunction(void)
 	glBindVertexArray(dock.vaoId);
 	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(40.0f, 100.0f, -2.0f));
 	dock.Render(myMatrixLocation, myMatrix);
-	fireworks.Render(projection, view, 32);
+	
 
 
 	
@@ -497,7 +497,7 @@ void RenderFunction(void)
 	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-offs+40.0f, offs+100.0f, -2.0f));
 	dock.Render(myMatrixLocation, myMatrix);
 
-
+	fireworks.Render(projection, view, 32);
 	glUseProgram(ProgramId);
 
 	glutSwapBuffers();
