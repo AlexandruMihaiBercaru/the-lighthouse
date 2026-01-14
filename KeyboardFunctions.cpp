@@ -1,10 +1,11 @@
 
 #include "KeyboardFunctions.h"
+#include "Spotlight.h"
 #include <cstdlib>
 #include <cmath>
 
 
-void KeyboardFunctions::ProcessNormalKeys(unsigned char key, int x, int y, CameraParameters& params, Fireworks& fireworksHandler)
+void KeyboardFunctions::ProcessNormalKeys(unsigned char key, int x, int y, CameraParameters& params, Fireworks& fireworksHandler, Spotlight* spotlight)
 {
 	switch (key) {
 	case '-':
@@ -12,6 +13,13 @@ void KeyboardFunctions::ProcessNormalKeys(unsigned char key, int x, int y, Camer
 		break;
 	case '=':
 		params.dist += 2;
+		break;
+	case 'r':
+	case 'R':
+		if (spotlight) {
+			spotlight->ToggleRotation();
+			std::cout << "Spotlight rotation: " << (spotlight->IsRotating() ? "ON" : "OFF") << std::endl;
+		}
 		break;
 	}
 

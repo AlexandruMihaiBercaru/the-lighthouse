@@ -104,6 +104,15 @@ void main(void)
             case 9://texture for imported models;
                  TexCoord = inTexture;
                  break;
+            case 10://texture for imported models;
+                 TexCoord = inTexture;
+                 break;
+            case 11://texture for imported models;
+                 TexCoord = inTexture;
+                 break;
+            case 12://texture for imported models;
+                 TexCoord = inTexture;
+                 break;
         }
     }
 
