@@ -157,23 +157,38 @@ void main(void)
      float p = 0.25f;
 
      if(objectId == 8){ //texturi
-            out_Color = texture(ourTexture,TexCoord)  *p+ out_Color*(1-p);
+            if (fogEnable == 1)
+                out_Color = texture(ourTexture,TexCoord)  *p+ out_Color*(1-p);
+            else
+                out_Color = texture(ourTexture,TexCoord);
      }
 
      if(objectId == 9){
-            out_Color = texture(texture_diffuse1,TexCoord);
+            if (fogEnable == 1) 
+                out_Color =  texture(texture_diffuse1,TexCoord) *p+ out_Color*(1-p) ;
+            else
+                out_Color = texture(texture_diffuse1, TexCoord);
      }
 
      if(objectId == 10){ // ID pentru cottage
-            out_Color = texture(texture_diffuse1, TexCoord);
+            if (fogEnable == 1) 
+                out_Color =  texture(texture_diffuse1,TexCoord) *p+ out_Color*(1-p) ;
+            else
+                out_Color = texture(texture_diffuse1, TexCoord);
      }
 
      if(objectId == 11){ // ID pentru boat1
-            out_Color = texture(texture_diffuse1, TexCoord);
+            if (fogEnable == 1) 
+                out_Color =  texture(texture_diffuse1,TexCoord) *p+ out_Color*(1-p) ;
+            else
+                out_Color = texture(texture_diffuse1, TexCoord);
      }
 
      if(objectId == 12){ // ID pentru boat1
-            out_Color = texture(texture_diffuse1, TexCoord);
+            if (fogEnable == 1) 
+                out_Color =  texture(texture_diffuse1,TexCoord) *p+ out_Color*(1-p) ;
+            else
+                out_Color = texture(texture_diffuse1, TexCoord);
      }
 
 }
