@@ -21,6 +21,7 @@
 #include "Cone.h"
 #include "Cilindru.h"
 #include "Fireworks.h"	
+#include "Spotlight.h"
 #include "Model.h" // contine #include "stb_image.h"
 
 //  Identificatorii obiectelor de tip OpenGL;
@@ -94,6 +95,15 @@ Cilindru stalpFar(NR_PARR_CIL, NR_MERID_CIL, 1.0f, 10.0f);
 
 Model* tree;
 
+// cottage
+Model* cottage;
+
+// boats
+Model* boat1;
+Model* boat2;
+
+Spotlight* spotlight;
+
 //	Identificatori optiuni meniu;
 enum {
 	FOG, NO_FOG
@@ -106,12 +116,12 @@ void Menu(int selection)
 	renderMode = selection;
 	glutPostRedisplay();
 }
-
-void processNormalKeys(unsigned char key, int x, int y){
-	KeyboardFunctions::ProcessNormalKeys(key, x, y, cameraParams, fireworks);
+//Nou inlocuit
+void processNormalKeys(unsigned char key, int x, int y) {
+	KeyboardFunctions::ProcessNormalKeys(key, x, y, cameraParams, fireworks, spotlight);
 }
 
-void processSpecialKeys(int key, int xx, int yy){
+void processSpecialKeys(int key, int xx, int yy) {
 	KeyboardFunctions::ProcessSpecialKeys(key, xx, yy, cameraParams);
 }
 
@@ -147,7 +157,7 @@ void DestroyVBO(void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-	glDeleteVertexArrays(1, &VaoId); 
+	glDeleteVertexArrays(1, &VaoId);
 }
 
 //  Crearea si compilarea obiectelor de tip shader;
@@ -172,6 +182,11 @@ void Cleanup(void)
 {
 	DestroyShaders();
 	DestroyVBO();
+	delete spotlight;
+	delete tree;
+	delete cottage;
+	delete boat1;
+	delete boat2;
 };
 
 
@@ -229,6 +244,21 @@ void Initialize(void)
 
 	// model cu assimp
 	tree = new Model("assets/Tree/Tree.obj");
+
+	// cottage
+	cottage = new Model("assets/Cottage/Cottage_FREE.obj");
+
+	// boats
+	boat1 = new Model("assets/Boat1/boat.obj");
+	boat2 = new Model("assets/Boat2/boat2.obj");
+
+	// Initializare spotlight - pozitia va fi setata dinamic in RenderFar()
+	spotlight = new Spotlight(
+		glm::vec3(0.0f, 0.0f, 100.0f),  // Pozitie initiala (va fi actualizata)
+		25.0f,   // Unghi interior (grade)
+		35.0f,   // Unghi exterior (grade)
+		1.0f     // Viteza de rotatie (radiani/secunda)
+	);
 
 	// Locatii ptr shader
 	nrVertLocation = glGetUniformLocation(ProgramId, "nrVertices");
@@ -307,11 +337,11 @@ void RenderFar() {
 
 	glBindVertexArray(stalpFar.vaoId);
 	float radius = 0.80 * 30.0f;
-	int nrStalpi=12;
+	int nrStalpi = 12;
 	modelMatrix = myMatrix;
 	float ratio = 2 * PI / nrStalpi;
 	for (int i = 0; i < 12; i++) {
-		myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3( radius * sinf( ratio *i) , radius * cosf(ratio * i), -10.0f))
+		myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(radius * sinf(ratio * i), radius * cosf(ratio * i), -10.0f))
 			* modelMatrix;
 		stalpFar.Render(myMatrixLocation, myMatrix);//exterior
 
@@ -329,7 +359,7 @@ void RenderFar() {
 		//stalpFar.Render(myMatrixLocation, myMatrix);//exterior
 
 
-		myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(radius*0.5 * sinf(ratio * i), radius*0.5 * cosf(ratio * i), 10.0f))
+		myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(radius * 0.5 * sinf(ratio * i), radius * 0.5 * cosf(ratio * i), 10.0f))
 			* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.5f))
 			* modelMatrix;
 		stalpFar.Render(myMatrixLocation, myMatrix);//interior
@@ -345,7 +375,7 @@ void RenderFar() {
 
 	glBindVertexArray(con.vaoId);
 	myMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -104.0f))
-		* glm::scale(glm::mat4(1.0f), glm::vec3(2.2f,2.2f,2.5f));
+		* glm::scale(glm::mat4(1.0f), glm::vec3(2.2f, 2.2f, 2.5f));
 	con.Render(myMatrixLocation, myMatrix);
 
 	glUniform1i(objectLocation, 0); // 0 - generat procedural
@@ -356,6 +386,11 @@ void RenderFar() {
 		* myMatrix;
 
 	baraFar.Render(myMatrixLocation, myMatrix);*/
+
+	// Actualizeaza pozitia spotlight-ului la varful farului
+	// Pozitia este in centrul "cuibului" format de cilindrii circulari
+	glm::vec3 spotlightPos = glm::vec3(0.0f, 0.0f, 97.5f); // Aproximativ la varful farului
+	spotlight->SetPosition(spotlightPos);
 
 }
 
@@ -372,6 +407,9 @@ void RenderFunction(void)
 	fireworks.Update(deltaTime);
 
 	SetMVP();
+
+	// Update spotlight
+	spotlight->Update(deltaTime);
 
 	// Matricea de modelare - aplicam rotatiile cand importam modele, ca sa le pun "in picioare"
 	myMatrix = glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(0.0, 1.0, 0.0))
@@ -391,15 +429,19 @@ void RenderFunction(void)
 	glUniformMatrix4fv(matrUmbraLocation, 1, GL_FALSE, &matrUmbra[0][0]);
 	glUniform3f(lightPosLocation, obsX, obsY, obsZ);
 	glUniform1i(codColLocation, 0);
-	
+
+	// Activeaza spotlight-ul
+	glUniform1i(glGetUniformLocation(ProgramId, "spotlightEnable"), 1);
+	spotlight->SendToShader(ProgramId);
+
 	// optiune efect de ceata sau nu -> extindem ulterior pentru setari mai complexe
 	switch (renderMode) {
-		case NO_FOG:
-			glUniform1i(glGetUniformLocation(ProgramId, "fogEnable"), 0);
-			break;
-		case FOG:
-			glUniform1i(glGetUniformLocation(ProgramId, "fogEnable"), 1);
-			break;
+	case NO_FOG:
+		glUniform1i(glGetUniformLocation(ProgramId, "fogEnable"), 0);
+		break;
+	case FOG:
+		glUniform1i(glGetUniformLocation(ProgramId, "fogEnable"), 1);
+		break;
 	}
 
 	//	Transmiterea variabilei uniforme pentru texturare spre shaderul de fragmente;
@@ -428,18 +470,82 @@ void RenderFunction(void)
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (void*)(6));
 	glUniform1i(objectLocation, 0);
-	
+
 	myMatrix = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 1.0, 0.0))
 		* glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0, 0.0, 1.0));
 	RenderFar();
 
-	
-	glUniform1i(objectLocation, 9); 
+
+	glUniform1i(objectLocation, 9);
 	glm::mat4 modelMat = glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(0.0, 1.0, 0.0));
-		
+
 	modelMat = glm::scale(modelMat, glm::vec3(1.0f)); // Scale if too big/small
 	if (tree) {
 		tree->Draw(ProgramId);
+	}
+
+	// cottage
+	glUniform1i(objectLocation, 10);
+	glm::mat4 cottageMatrix = glm::mat4(1.0f);
+
+	// Pozitionare: pe iarba, la distanta de far
+	cottageMatrix = glm::translate(cottageMatrix, glm::vec3(-60.0f, -80.0f, 21.0f));
+
+	// Rotatie pentru orientare corecta
+	cottageMatrix = glm::rotate(cottageMatrix, PI / 2, glm::vec3(-1.0, 0.0, 0.0));
+
+	// Scalare pentru dimensiune potrivita
+	cottageMatrix = glm::scale(cottageMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
+
+	// Trimite matricea catre shader
+	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &cottageMatrix[0][0]);
+
+	if (cottage) {
+		cottage->Draw(ProgramId);
+	}
+
+	// boat 1
+	glUniform1i(objectLocation, 11);
+	glm::mat4 boat1Matrix = glm::mat4(1.0f);
+
+	// Pozitionare pe apa (y ar trebui sa fie aprox 0 pentru suprafata apei)
+	// X si Y sunt coordonatele pe planul orizontal
+	boat1Matrix = glm::translate(boat1Matrix, glm::vec3(300.0f, 350.0f, 22.0f));
+
+	// Rotatie pentru orientare corect
+	boat1Matrix = glm::rotate(boat1Matrix, 3*PI / 4, glm::vec3(1.0, 0.0, 0.0));
+
+	// Scalare - incepe cu valori mici si creste treptat
+	boat1Matrix = glm::scale(boat1Matrix, glm::vec3(0.05f, 0.05f, 0.05f));
+
+	// Trimite matricea catre shader
+	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &boat1Matrix[0][0]);
+
+	if (boat1) {
+		boat1->Draw(ProgramId);
+	}
+
+	// boat 2
+	glUniform1i(objectLocation, 12);
+	glm::mat4 boat2Matrix = glm::mat4(1.0f);
+
+	// Pozitionare pe apa, la distanta de prima barca
+	boat2Matrix = glm::translate(boat2Matrix, glm::vec3(200.0f, -200.0f, 22.0f));
+
+	// Rotatie pentru orientare corecta
+	boat2Matrix = glm::rotate(boat2Matrix, PI / 2, glm::vec3(-1.0, 0.0, 0.0));
+
+	// Rotatie suplimentara daca vrei sa o orientezi diferit
+	boat2Matrix = glm::rotate(boat2Matrix, PI / 4, glm::vec3(0.0, 0.0, 1.0));
+
+	// Scalare - mai mica pentru boat2
+	boat2Matrix = glm::scale(boat2Matrix, glm::vec3(0.7f, 0.7f, 0.7f));
+
+	// Trimite matricea catre shader
+	glUniformMatrix4fv(myMatrixLocation, 1, GL_FALSE, &boat2Matrix[0][0]);
+
+	if (boat2) {
+		boat2->Draw(ProgramId);
 	}
 
 	//Cilindru

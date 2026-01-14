@@ -31,6 +31,25 @@ uniform sampler2D ourTexture;
 uniform sampler2D ourTexture1;
 uniform sampler2D texture_diffuse1; // Assimp loads this name by default -> pentru modele
 
+// Spotlight structure
+struct SpotLight {
+    vec3 position;
+    vec3 direction;
+    float cutOff;
+    float outerCutOff;
+    
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    
+    float constant;
+    float linear;
+    float quadratic;
+};
+
+uniform SpotLight spotlight;
+uniform int spotlightEnable;
+
 void main(void)
   {
     //efectul de ceata - implementarea 1
@@ -77,6 +96,39 @@ void main(void)
         vec3 emission=vec3(0.0, 0.0, 0.0);
         vec3 result = emission + (ambient_term + diffuse_term + specular_term);
 
+        // ============ SPOTLIGHT CALCULATION ============
+        if (spotlightEnable == 1) {
+            vec3 spotLightDir = normalize(spotlight.position - FragPos);
+        
+        // Verificam daca fragmentul este in conul de lumina
+        float theta = dot(spotLightDir, normalize(-spotlight.direction));
+        float epsilon = spotlight.cutOff - spotlight.outerCutOff;
+        float intensity = clamp((theta - spotlight.outerCutOff) / epsilon, 0.0, 1.0);
+        
+	    // Calculam atenuarea distantei
+        float distance = length(spotlight.position - FragPos);
+        float attenuation = 1.0 / (spotlight.constant + spotlight.linear * distance + spotlight.quadratic * (distance * distance));
+        
+        // Componentele spotlight
+        vec3 spot_ambient = spotlight.ambient * objectColor;
+        
+        float spot_diff = max(dot(norm, spotLightDir), 0.0);
+        vec3 spot_diffuse = spotlight.diffuse * spot_diff * objectColor;
+        
+        vec3 spot_reflectDir = reflect(-spotLightDir, norm);
+        float spot_spec = pow(max(dot(viewDir, spot_reflectDir), 0.0), shininess * 32.0);
+        vec3 spot_specular = spotlight.specular * spot_spec * objectColor;
+        
+        // Aplicam intensitatea si atenuarea
+        spot_ambient *= attenuation * intensity;
+        spot_diffuse *= attenuation * intensity;
+        spot_specular *= attenuation * intensity;
+
+	    // Adaugam contributia spotlight-ului
+        result += (spot_ambient + spot_diffuse + spot_specular);
+        }
+        // ============ END SPOTLIGHT ============
+
         // daca vrem setarea cu ceata
         if (fogEnable == 1){         
             vec4 color_fog = vec4(mix(fogColor, result, fogFactor), 1.0);
@@ -112,5 +164,16 @@ void main(void)
             out_Color = texture(texture_diffuse1,TexCoord);
      }
 
+     if(objectId == 10){ // ID pentru cottage
+            out_Color = texture(texture_diffuse1, TexCoord);
+     }
+
+     if(objectId == 11){ // ID pentru boat1
+            out_Color = texture(texture_diffuse1, TexCoord);
+     }
+
+     if(objectId == 12){ // ID pentru boat1
+            out_Color = texture(texture_diffuse1, TexCoord);
+     }
 
 }
