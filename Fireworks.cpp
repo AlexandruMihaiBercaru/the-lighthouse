@@ -55,19 +55,19 @@ void Fireworks::CreateExplosion(glm::vec3 origin, int numCurves, float radius, f
     curves.clear();
 
     glm::vec3 fireworksGold = glm::vec3(
-        0.94f + 0.03f * (float)rand() / RAND_MAX,
-        0.8f + 0.03f * (float)rand() / RAND_MAX,
-        0.02f + 0.03f * (float)rand() / RAND_MAX);
+        0.94f + 0.05f * (float)rand() / RAND_MAX,
+        0.8f + 0.05f * (float)rand() / RAND_MAX,
+        0.02f + 0.05f * (float)rand() / RAND_MAX);
 
 	glm::vec3 fireworksRed = glm::vec3(
 		0.9f + 0.05f * (float)rand() / RAND_MAX,
 		0.1f + 0.05f * (float)rand() / RAND_MAX,
-		0.02f + 0.03f * (float)rand() / RAND_MAX);
+		0.02f + 0.05f * (float)rand() / RAND_MAX);
 
 
 	for (int i = 0; i < numCurves; ++i) {
 		float angle = (2.0f * 3.14159f * i) / numCurves;
-        float angle2 = angle + 0.2f;
+        float angle2 = angle + 0.4f * (float)rand() / RAND_MAX;
 
         glm::vec3 p0 = origin;
 
@@ -81,7 +81,7 @@ void Fireworks::CreateExplosion(glm::vec3 origin, int numCurves, float radius, f
         glm::vec3 p2 = origin + glm::vec3(
             radius * cos(angle2),
             radius * sin(angle2),
-            30.0f);
+            20.0f);
 
 		int style = rand() % 3;
         switch (style)
@@ -99,9 +99,6 @@ void Fireworks::CreateExplosion(glm::vec3 origin, int numCurves, float radius, f
             AddCurve(p0, p1, p2, fireworksRed);
             break;
         }
-
-        // cularea particulei
-		
 	
 	}
 	UpdateVBO();
